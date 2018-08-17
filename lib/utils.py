@@ -5,6 +5,7 @@ import pandas as pd
 from pymongo import MongoClient, UpdateOne
 from datetime import datetime, timedelta
 from .exceptions import *
+import boto3
 import redis
 
 def chunk(n, it):
@@ -35,10 +36,13 @@ def get_mongo_client(test = False):
                      password = os.getenv('MONGO_PASSWORD'))
     return client
 
-def get_redis_client(test = False):
-    host = os.getenv('REDIS_HOST_TEST', 'localhost') if test else os.getenv('REDIS_HOST')
-    return redis.StrictRedis(host=host, port=6379, db=0)
-
+def get_redis_client():
+    host = os.getenv('REDIS_HOST', 'localhost')
+    port = int(os.getenv('REDIS_PORT', 6379))
+    password = os.getenv('REDIS_PASS', None)
+    db = int(os.getenv('REDIS_DB', 0))
+    client = redis.StrictRedis(host=host, password=password, port=port, db=db)
+    return client
 
 not_d = re.compile(r'[^\d]+')
 start = re.compile(r'^[^\d]')
@@ -100,6 +104,7 @@ def get_roster(path):
     return df
 
 def get_latest_s3(bucket, prefix):
+    s3 = boto3.client('s3')
     objects = s3.list_objects(Bucket=bucket, Prefix=prefix)
     s = sorted(objects['Contents'],
                key=lambda o: o['LastModified'])
