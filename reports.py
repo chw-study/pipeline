@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from dateutil import parser
 import os, re
 import requests
-from lib.utils import get_roster, get_mongo_client, get_crosswalk
+from lib.utils import get_roster, get_mongo_client, get_crosswalk, write_to_s3
 from lib.pipeline import start_pipeline
 from pymongo import UpdateOne
 from dotenv import load_dotenv
@@ -114,14 +114,11 @@ def merge_typeform(messages, typeform):
 class DataCorruptionError(BaseException):
     pass
 
-
 if __name__ == '__main__':
     load_dotenv()
     form_id = 'a1cQMO'
     typeform = clean_typeform(get_typeform_responses(form_id))
-
     messages = start_pipeline('')
     merged,_ = merge_typeform(messages, typeform)
     merged = merged.drop(['_merge'], 1)
-    filename = "reports_{0:%Y-%m-%d}.csv".format(datetime.now()),
-    merged.to_csv('reports_2018-07-31', index=False)
+    write_to_s3(merged, 'healthworkers-exports', 'reports-v2/report')

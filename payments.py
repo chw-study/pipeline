@@ -109,18 +109,7 @@ def calcs():
     supers = calc_payments(messages, pay_supers)
     return workers, supers
 
-def write_to_s3(df, key):
-    out = io.StringIO()
-    df.to_csv(out, index=False)
-
-    s3 = boto3.client('s3')
-    s3.put_object(
-        Bucket='healthworkers-payments',
-        Key="v2/{1}-{0:%Y-%m-%d_%H:%M}.csv".format(datetime.now(), key),
-        Body=out.getvalue()
-    )
-
 if __name__ == '__main__':
     workers, supers = calcs()
-    write_to_s3(workers, 'workers')
-    write_to_s3(supers, 'supers')
+    write_to_s3(workers, 'healthworkers-payments', 'v2/workers')
+    write_to_s3(supers, 'healthworkers-payments', 'v2/supers')

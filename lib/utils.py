@@ -120,3 +120,14 @@ def get_crosswalk():
     crosswalk['old_number'] = crosswalk.z08_2.astype(str)
     crosswalk['new_payment_number'] = crosswalk.new_payment_number.astype(str)
     return crosswalk
+
+def write_to_s3(df, bucket, key):
+    out = io.StringIO()
+    df.to_csv(out, index=False)
+
+    s3 = boto3.client('s3')
+    s3.put_object(
+        Bucket=bucket,
+        Key="{1}-{0:%Y-%m-%d_%H:%M}.csv".format(datetime.now(), key),
+        Body=out.getvalue()
+    )
