@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from .exceptions import *
 import boto3
 import redis
+import logging
+
 
 def chunk(n, it):
     src = iter(it)
@@ -41,6 +43,7 @@ def get_redis_client():
     port = int(os.getenv('REDIS_PORT', 6379))
     password = os.getenv('REDIS_PASS', None)
     db = int(os.getenv('REDIS_DB', 0))
+    logging.info('Connecting to REDIS: {}:{} DB: {}'.format(host, port, db))
     client = redis.StrictRedis(host=host, password=password, port=port, db=db)
     return client
 

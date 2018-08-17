@@ -6,6 +6,7 @@ from payments import agg_reports
 from bson.json_util import dumps
 from datetime import timedelta, datetime
 import logging
+logging.basicConfig(level = logging.INFO)
 
 def call_counts(messages):
     """ Counts calls per paymentPhone
