@@ -94,6 +94,7 @@ def ex(thresh, since = timedelta(weeks = 4)):
     (training
      .assign(chw_district = 'Test')
      .pipe(add_fake_training_date)
+     .sample(500)
      .pipe(write_needed_calls, r=r))
 
 if __name__ == '__main__':
