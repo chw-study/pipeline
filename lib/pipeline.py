@@ -77,22 +77,12 @@ def pipeline(messages, events, roster, crosswalk):
             # Add events: no-consent, attempts, and called
             .pipe(add_db_events, events = events))
 
+
 def start_pipeline(pre = '../'):
     roster = get_roster(pre+'rosters/chw.xlsx')
-    crosswalk = get_crosswalk(pre+'number-changes/number_changes.xlsx')
+    crosswalk = get_crosswalk()
     client = get_mongo_client()
     events = get_events(client['healthworkers'].events)
     rawmessages = get_messages_df(client['healthworkers'].rawmessages)
     messages = pipeline(rawmessages, events, roster, crosswalk)
     return messages
-
-
-# Calculate needed calls per worker, groupby district, write to redis list
-
-# Calculate payment per worker and super
-
-# Write out reports (with typeform data)
-
-# Convert attempts into events
-# Convert noConsent into events (makeup timestamp)
-# Convert called into events ( timestamp from Typeform?? )
