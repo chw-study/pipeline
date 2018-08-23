@@ -104,5 +104,5 @@ def ex(thresh, since = timedelta(weeks = 4)):
      .pipe(write_needed_calls, r=r))
 
 if __name__ == '__main__':
-    thresh = os.getenv('CALLCENTER_THRESHOLD', 0.2)
+    thresh = float(os.getenv('CALLCENTER_THRESHOLD', 0.2))
     ex(thresh)
