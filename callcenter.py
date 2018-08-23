@@ -28,11 +28,17 @@ def add_needed_calls(counts, target):
 # let's just randomize
 
 def pick_needed_calls(needed, messages):
+
+    # Filter out only those called (not those attempted or
+    # noConsent!). Shuffle just to make picks random
+    messages = messages[messages.called == False]
+
     lookup = needed.to_dict(orient='index')
 
+    # Helper fn, picks the amount needed per paymentPhone
     def head(df):
         amt = lookup.get(df.name, {}).get('needed', 0)
-        return df.head(int(amt))
+        return df.sample(frac=1).head(int(amt))
 
     to_call = (messages
                .groupby('paymentPhone')
@@ -98,5 +104,5 @@ def ex(thresh, since = timedelta(weeks = 4)):
      .pipe(write_needed_calls, r=r))
 
 if __name__ == '__main__':
-    thresh = os.getenv('CALLCENTER_THRESHOLD', 0.4)
+    thresh = os.getenv('CALLCENTER_THRESHOLD', 0.2)
     ex(thresh)

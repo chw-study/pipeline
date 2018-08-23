@@ -10,7 +10,7 @@ from bson.json_util import dumps
 
 records = [
     { 'paymentPhone': 'bar', 'serviceDate': datetime(2018,4,1), 'called': True, 'attempted': False},
-    { 'paymentPhone': 'bar', 'serviceDate': datetime(2018,4,1), 'called': False, 'attempted': False},
+    { 'paymentPhone': 'bar', 'serviceDate': datetime(2018,4,2), 'called': False, 'attempted': False},
     { 'paymentPhone': 'foo', 'serviceDate': datetime(2018,5,1), 'called': False, 'attempted': False},
 ]
 
@@ -55,6 +55,7 @@ def test_pick_needed_calls(messages):
     df = add_needed_calls(counts, .6)
     needed = pick_needed_calls(df, messages)
     assert(needed.shape == (2, 4))
+    assert(needed.called.tolist() == [False, False])
 
 def test_write_needed_calls_leaves_only_new_records(r, to_write):
     r.lpush('foo', 'bar')
