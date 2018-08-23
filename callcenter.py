@@ -5,7 +5,7 @@ from lib.utils import get_redis_client
 from payments import agg_reports
 from bson.json_util import dumps
 from datetime import timedelta, datetime
-import logging
+import logging, os
 logging.basicConfig(level = logging.INFO)
 
 def call_counts(messages):
@@ -98,4 +98,5 @@ def ex(thresh, since = timedelta(weeks = 4)):
      .pipe(write_needed_calls, r=r))
 
 if __name__ == '__main__':
-    ex(.2)
+    thresh = os.getenv('CALLCENTER_THRESHOLD', 0.4)
+    ex(thresh)
