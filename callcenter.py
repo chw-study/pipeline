@@ -29,13 +29,14 @@ def add_needed_calls(counts, target):
 
 def pick_needed_calls(needed, messages):
 
-    # Filter out only those called (not those attempted or
-    # noConsent!). Shuffle just to make picks random
-    messages = messages[messages.called == False]
+    # Filter out only those called (not those noConsent).
+    messages = messages[(messages.called == False) &
+                        (messages.noConsent == False)]
 
     lookup = needed.to_dict(orient='index')
 
     # Helper fn, picks the amount needed per paymentPhone
+    # Shuffle just to make picks random (sample)
     def head(df):
         amt = lookup.get(df.name, {}).get('needed', 0)
         return df.sample(frac=1).head(int(amt))
