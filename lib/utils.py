@@ -8,6 +8,7 @@ from .exceptions import *
 import boto3
 import redis
 import logging
+import io
 
 
 def chunk(n, it):
@@ -44,7 +45,7 @@ def get_redis_client():
     password = os.getenv('REDIS_PASS', None)
     db = int(os.getenv('REDIS_DB', 0))
     logging.info('Connecting to REDIS: {}:{} DB: {}'.format(host, port, db))
-    client = redis.StrictRedis(host=host, password=password, port=port, db=db)
+    client = redis.StrictRedis(host=host, password=password, port=port, db=db, decode_responses=True)
     return client
 
 not_d = re.compile(r'[^\d]+')
@@ -123,8 +124,9 @@ def get_crosswalk():
 
 def write_to_s3(df, bucket, key):
     out = io.StringIO()
+    size = df.shape[0]
     df.to_csv(out, index=False)
-
+    logging.info('REPORTS: Writing {} records to :{}/{}'.format(size, bucket, key))
     s3 = boto3.client('s3')
     s3.put_object(
         Bucket=bucket,

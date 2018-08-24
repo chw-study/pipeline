@@ -10,9 +10,6 @@ from lib.exceptions import *
 from lib.pipeline import *
 from lib.utils import *
 
-import boto3
-import io
-
 import logging
 
 def monther(date, now = datetime.utcnow()):
