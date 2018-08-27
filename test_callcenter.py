@@ -80,13 +80,11 @@ def test_write_needed_calls_works_with_NaNs(r):
     assert(r.rpop('foo') == b'{"bar": null, "chw_district": "foo"}')
 
 def test_write_needed_calls_works_with_large_curr_queue(r, to_write):
-    # pops off only the size of the new queue
+    # removes everything from old queue
     r.lpush('foo', '1')
     r.lpush('foo', '2')
     r.lpush('foo', '3')
     foo = {'chw_district': 'foo'}
     write_needed_calls(pd.DataFrame([foo]), r)
-    assert(r.rpop('foo') == b'2')
-    assert(r.rpop('foo') == b'3')
     assert(json.loads(r.rpop('foo')) == foo)
     assert(r.rpop('foo') == None)

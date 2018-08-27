@@ -67,10 +67,7 @@ def write_needed_calls(to_call, r):
         old_size = r.llen(d)
         new_size = loaded[d]
         logging.info('loading {} new messages in district {}'.format(new_size, d))
-        if old_size > new_size:
-            pipe.ltrim(d, 0, -loaded[d] - 1)
-        else:
-            pipe.ltrim(d, 0, loaded[d] - 1)
+        pipe.ltrim(d, 0, loaded[d] - 1)
 
     pipe.execute()
 
