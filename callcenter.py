@@ -29,7 +29,7 @@ def add_needed_calls(counts, target):
 
 def pick_needed_calls(needed, messages):
 
-    # Filter out only those called (not those noConsent).
+    # Filter out those already called
     messages = messages[(messages.called == False) &
                         (messages.noConsent == False)]
 
@@ -103,4 +103,5 @@ def ex(thresh, since = timedelta(weeks = 4)):
 
 if __name__ == '__main__':
     thresh = float(os.getenv('CALLCENTER_THRESHOLD', 0.2))
-    ex(thresh)
+    since = float(os.getenv('CALLCENTER_WEEKS_SINCE', 4))
+    ex(thresh, timedelta(weeks = since))
