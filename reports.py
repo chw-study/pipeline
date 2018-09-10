@@ -53,8 +53,11 @@ def clean_typeform(typeform):
             .assign(code = typeform.code.str.upper()))
 
 def get_question(response, qid, key):
-    return next((a[key] for a in response['answers']
-                 if a['field']['id'] == qid), None)
+    if response['answers']:
+        return next((a[key] for a in response['answers']
+                     if a['field']['id'] == qid), None)
+    else:
+        logging.error('No answer in the following response: {}'.format(response))
 
 def flatten_response(res):
     d = res['hidden']
