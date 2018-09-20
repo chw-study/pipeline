@@ -103,7 +103,7 @@ def get_events(collection):
 
 def get_roster(path):
     df = pd.read_excel(path)
-    df['name'] = df.chw_name
+    df = df.rename(columns = {'chw_name': 'name'})
     df['reporting_number'] = df['z08_2'].astype(str)
     df['training_date'] = df.training_date.map(lambda d: datetime.strptime(d, '%d.%m.%y'))
     return df
