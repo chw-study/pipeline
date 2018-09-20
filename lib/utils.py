@@ -103,7 +103,8 @@ def get_events(collection):
 
 def get_roster(path):
     df = pd.read_excel(path)
-    df['reporting_number'] = df.reporting_number.astype(str)
+    df['name'] = df.chw_name
+    df['reporting_number'] = df['z08_2'].astype(str)
     df['training_date'] = df.training_date.map(lambda d: datetime.strptime(d, '%d.%m.%y'))
     return df
 
@@ -118,8 +119,8 @@ def get_latest_s3(bucket, prefix):
 def get_crosswalk():
     path = get_latest_s3('healthworkers-payments', 'number_changes/')
     crosswalk = pd.read_excel(path)
-    crosswalk['old_number'] = crosswalk.z08_2.astype(str)
-    crosswalk['new_payment_number'] = crosswalk.new_payment_number.astype(str)
+    crosswalk['old_number'] = crosswalk.old_number.astype(str)
+    crosswalk['new_payment_number'] = crosswalk.last_number.astype(str)
     return crosswalk
 
 def write_to_s3(df, bucket, key):
