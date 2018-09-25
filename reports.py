@@ -60,7 +60,11 @@ def get_question(response, qid, key):
         logging.error('No answer in the following response: {}'.format(response))
 
 def flatten_response(res):
-    d = res['hidden']
+    # Incase anyone submits a form not from our website!
+    try:
+        d = res['hidden']
+    except KeyError:
+        return None
     provided_care = get_question(res, 'tN8EHB01kUah', 'boolean')
     if provided_care == None:
         d['called'] = False
@@ -71,7 +75,8 @@ def flatten_response(res):
 
 def get_typeform_responses(form_id):
     responses = get_responses(form_id)
-    df = pd.DataFrame([flatten_response(r) for r in responses])
+    responses = [flatten_response(r) for r in responses]
+    df = pd.DataFrame([r for r in responses if r])
     return df
 
 def _merger(messages, typeform, date):
