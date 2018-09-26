@@ -127,6 +127,11 @@ if __name__ == '__main__':
     form_id = 'a1cQMO'
     typeform = clean_typeform(get_typeform_responses(form_id))
     messages = start_pipeline('')
+
+    # filter latest
+    weeks_since = os.getenv('REPORTS_GET_SINCE', 9999)
+    messages = messages[messages.serviceDate >= datetime.utcnow() - timedelta(weeks = weeks_since)]
+
     merged,_ = merge_typeform(messages, typeform)
     merged = merged.drop(['_merge'], 1)
     write_to_s3(merged, 'healthworkers-exports', 'reports-v2/report')
