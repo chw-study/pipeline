@@ -20,9 +20,9 @@ def roster():
 @pytest.fixture()
 def messages():
     df = pd.DataFrame([
-        { 'senderPhone': 'foo', 'otherkey': 'otherval', '_id': 'foo'},
-        { 'senderPhone': 'bar', 'otherkey': 'otherval', '_id': 'bar'},
-        { 'senderPhone': 'foo', 'otherkey': 'otherval', '_id': 'baz'}
+        { 'senderPhone': 'foo', 'otherkey': 'otherval','timestamp': datetime(2018,2,27), 'ogServiceDate': '11.2.2018',  '_id': 'foo'},
+        { 'senderPhone': 'bar', 'otherkey': 'otherval','timestamp': datetime(2018,2,27), 'ogServiceDate': '29.2.2018',  '_id': 'bar'},
+        { 'senderPhone': 'foo', 'otherkey': 'otherval','timestamp': datetime(2018,2,27), 'ogServiceDate': '1.12.2017',  '_id': 'baz'}
     ])
     df['serviceDate'] = pd.Series([ datetime(2018,1,1,5,35), datetime(2018,2,2,3,45), datetime(2018,2,2,1,10)])
     yield df
@@ -93,6 +93,15 @@ def test_add_db_events(messages):
     assert(new_messages[new_messages._id == 'foo'].attempted.tolist() == [True])
     assert(new_messages[new_messages._id == 'bar'].attempted.tolist() == [False])
 
+def test_pipeline_fixes_past_and_future_service_dates(messages, roster):
+    crosswalk = pd.DataFrame([{'old_number': 'foo', 'new_payment_number': 'newnumber'}])
+    events = ()
+    transformed = pipeline(messages, events, roster, crosswalk)
+
+    # Not sure why the order is such, but should be deterministic...
+    assert(transformed.serviceDate[0] == transformed.timestamp[0])
+    assert(transformed.serviceDate[1] == transformed.timestamp[1])
+    assert(transformed.serviceDate[2] != transformed.timestamp[2])
 
 def test_pipeline_drops_duplicates(messages, roster):
     m = messages.to_dict(orient='records')

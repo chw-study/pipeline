@@ -1,4 +1,4 @@
-from lib.utils import get_roster, get_events, get_crosswalk, get_mongo_client, get_messages_df
+from lib.utils import get_roster, get_events, get_crosswalk, get_mongo_client, get_messages_df, get_service_date
 import logging
 import pandas as pd
 
@@ -53,6 +53,13 @@ def add_db_events(messages, events):
             .reset_index()
             .rename(columns = {'index': '_id'}))
 
+def add_service_date(messages):
+    fn = lambda r: get_service_date(r['ogServiceDate'],
+                                    r['timestamp'],
+                                    r['training_date'])
+    service_date = messages.apply(fn, axis=1)
+    return messages.assign(serviceDate = service_date)
+
 def pipeline(messages, events, roster, crosswalk):
     k = 'reporting_number'
     roster = translate_numbers(roster, crosswalk, old_key = k, new_key = k)
@@ -68,6 +75,8 @@ def pipeline(messages, events, roster, crosswalk):
             .pipe(merge_worker_info,
                   roster = roster,
                   drop_keys = ['reporting_number', 'contact_number'])
+            # add serviceDate
+            .pipe(add_service_date)
             # Add column for training
             .assign(training = False)
             # Tag training messages from non-worker numbers

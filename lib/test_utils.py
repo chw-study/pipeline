@@ -38,14 +38,29 @@ def test_make_id_makes_unique_ids(message):
     assert(b != c)
     assert(c != d)
 
-def test_convert_parses_valid_service_date(rawmessage):
-    c = convert_entry(rawmessage)
-    assert(c['serviceDate'] == datetime(2018,2,10))
+def test_get_service_date_parses_valid_service_date(rawmessage):
+    training_date = datetime(2018,1,1)
+    d = get_service_date(rawmessage['Service_Date'], rawmessage['Report_Date'], training_date)
+    assert(d == datetime(2018,2,10))
 
 def test_convert_parses_fallsback_with_future_date(rawmessage):
+    training_date = datetime(2018,1,1)
     rawmessage['Service_Date'] = '29.02.2018'
-    c = convert_entry(rawmessage)
-    assert(c['serviceDate'] == datetime(2018,2,27))
+    d = get_service_date(rawmessage['Service_Date'], rawmessage['Report_Date'], training_date)
+    assert(d == datetime(2018,2,27))
+
+def test_convert_parses_fallsback_with_past_date(rawmessage):
+    training_date = datetime(2018,2,22)
+    rawmessage['Service_Date'] = '20.02.2018'
+    d = get_service_date(rawmessage['Service_Date'], rawmessage['Report_Date'], training_date)
+
+    assert(d == datetime(2018,2,27))
+
+def test_get_service_date_parses_valid_service_date_on_training_day(rawmessage):
+    training_date = datetime(2018,1,1)
+    rawmessage['Service_Date'] = '1.1.2018'
+    d = get_service_date(rawmessage['Service_Date'], rawmessage['Report_Date'], training_date)
+    assert(d == datetime(2018,1,1))
 
 def test_convert_uppercases_code(rawmessage):
     c = convert_entry(rawmessage)

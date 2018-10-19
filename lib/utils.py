@@ -51,17 +51,15 @@ def get_redis_client():
 not_d = re.compile(r'[^\d]+')
 start = re.compile(r'^[^\d]')
 
-def get_service_date(entry):
-    report_date = entry['Report_Date']
+def get_service_date(date, report_date, training_date):
     fallback = report_date.replace(hour=0, minute=0, second=0)
-    date = entry['Service_Date']
     date = re.sub(not_d, '.', date)
     date = re.sub(start, '', date)
     try:
         date = datetime.strptime(date, '%d.%m.%Y')
         if date > report_date:
             raise MalformedDateException('Service date in future: {}'.format(date))
-        if report_date - date > timedelta(weeks = 8):
+        if date < training_date :
             raise MalformedDateException('Service date too far in the past: {}'.format(date))
     except MalformedDateException as e:
         logging.debug(e)
@@ -83,7 +81,6 @@ def make_id(m):
 def convert_entry(og):
     """ Changes keys and formats for ID creation """
     e = {
-        'serviceDate': get_service_date(og),
         'ogServiceDate': og['Service_Date'],
         'patientPhone': og['Patient_Phone_Number'],
         'patientName': og['Patient_Name'].upper(),
