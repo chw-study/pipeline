@@ -43,7 +43,10 @@ def get_count_df(messages):
     drop_keys = ['_id', 'code', 'ogServiceDate', 'serviceDate',
                  'patientName', 'patientPhone', 'timestamp',
                  'training', 'called', 'noConsent', 'attempted']
+
     messages = messages[messages.training == False]
+    messages = messages[~(messages.timestamp - messages.serviceDate > timedelta(weeks = 6))]
+
     return (messages
             .pipe(add_payment_date)
             .pipe(agg_reports)

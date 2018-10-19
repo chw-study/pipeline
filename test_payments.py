@@ -4,18 +4,18 @@ import pandas as pd
 import pytest
 
 records = [
-    { 'paymentPhone': '01', 'serviceDate': datetime(2018,2,1), 'phone_ps': '13',  'treat': 2, 'training_date': datetime(2018,1,1), 'training': False},
-    { 'paymentPhone': '01', 'serviceDate': datetime(2018,4,1), 'phone_ps': '13',  'treat': 2, 'training_date': datetime(2018,1,1), 'training': False},
-    { 'paymentPhone': '02', 'serviceDate': datetime(2018,4,1), 'phone_ps': '12', 'treat': 1, 'training_date': datetime(2018,1,1), 'training': False},
-    { 'paymentPhone': '03', 'serviceDate': datetime(2018,4,1), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False},
-    { 'paymentPhone': '04', 'serviceDate': datetime(2018,5,1), 'phone_ps': '11', 'treat': 0, 'training_date': datetime(2018,1,1) , 'training': False},
-    { 'paymentPhone': '04', 'serviceDate': datetime(2018,5,1), 'phone_ps': '11', 'treat': 0, 'training_date': datetime(2018,1,1) , 'training': False},
-    { 'paymentPhone': '01', 'serviceDate': datetime(2018,5,1), 'phone_ps': '12', 'treat': 1, 'training_date': datetime(2018,1,1), 'training': False},
-    { 'paymentPhone': '05', 'serviceDate': datetime(2100,12,1), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '01','timestamp': datetime(2018,3,1),  'serviceDate': datetime(2018,2,1), 'phone_ps': '13',  'treat': 2, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '01','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,4,1), 'phone_ps': '13',  'treat': 2, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '02','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,4,1), 'phone_ps': '12', 'treat': 1, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '03','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,4,1), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '04','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,5,1), 'phone_ps': '11', 'treat': 0, 'training_date': datetime(2018,1,1) , 'training': False},
+    { 'paymentPhone': '04','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,5,1), 'phone_ps': '11', 'treat': 0, 'training_date': datetime(2018,1,1) , 'training': False},
+    { 'paymentPhone': '01','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,5,1), 'phone_ps': '12', 'treat': 1, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '05','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2100,12,1), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False},
 ]
 
 fat_records = [
-    { 'paymentPhone': '05', 'serviceDate': datetime(2018,m,3), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False}
+    { 'paymentPhone': '05','timestamp': datetime(2018,m,1),  'serviceDate': datetime(2018,m,3), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False}
 for m in range (3,5) for i in range(1,50)]
 
 @pytest.fixture()
@@ -69,6 +69,18 @@ def test_payments(messages):
     assert(workers.reports.tolist() == [1,1,1,1,1,2])
     supers = calc_payments(messages, pay_supers)
     assert(supers.payment.tolist() == [10000, 12000, 10000, 11000, 10000, 12000])
+
+def test_payments_ignores_messages_more_than_6_weeks_old(messages):
+    old_message = { 'paymentPhone': '01','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,2,1), 'phone_ps': '13',  'treat': 2, 'training_date': datetime(2018,1,1), 'training': False}
+
+    messages = pd.concat([messages, pd.DataFrame(old_message, index=[0])], sort=False)
+
+    workers = calc_payments(messages, pay_workers)
+    assert(workers.payment.tolist() == [12000, 12000, 10000, 11000, 10000, 10000])
+    assert(workers.reports.tolist() == [1,1,1,1,1,2])
+    supers = calc_payments(messages, pay_supers)
+    assert(supers.payment.tolist() == [10000, 12000, 10000, 11000, 10000, 12000])
+
 
 def test_payments_gives_base_for_each_month_with_one_message(messages):
     workers = calc_payments(messages, pay_workers)
