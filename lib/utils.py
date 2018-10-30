@@ -98,7 +98,8 @@ def get_messages_df(collection):
 def get_events(collection):
     return collection.find({})
 
-def get_roster(path):
+def get_roster():
+    path = get_latest_s3('healthworkers-payments', 'chw_database/')
     df = pd.read_excel(path)
     df = df.rename(columns = {'chw_name': 'name'})
     df['reporting_number'] = df['z08_2'].astype(str)
@@ -119,6 +120,7 @@ def get_crosswalk():
     crosswalk['old_number'] = crosswalk.old_number.astype(str)
     crosswalk['new_payment_number'] = crosswalk.last_number.astype(str)
     return crosswalk
+
 
 def write_to_s3(df, bucket, key):
     out = io.StringIO()

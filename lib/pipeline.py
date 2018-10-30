@@ -88,7 +88,7 @@ def pipeline(messages, events, roster, crosswalk):
 
 
 def start_pipeline(pre = '../'):
-    roster = get_roster(pre+'rosters/chw.xlsx')
+    roster = get_roster()
     crosswalk = get_crosswalk()
     client = get_mongo_client()
     events = get_events(client['healthworkers'].events)
