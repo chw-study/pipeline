@@ -10,8 +10,8 @@ records = [
     { 'paymentPhone': '03','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,4,1), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False},
     { 'paymentPhone': '04','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,5,1), 'phone_ps': '11', 'treat': 0, 'training_date': datetime(2018,1,1) , 'training': False},
     { 'paymentPhone': '04','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,5,1), 'phone_ps': '11', 'treat': 0, 'training_date': datetime(2018,1,1) , 'training': False},
-    { 'paymentPhone': '01','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,5,1), 'phone_ps': '12', 'treat': 1, 'training_date': datetime(2018,1,1), 'training': False},
-    { 'paymentPhone': '05','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2100,12,1), 'phone_ps': '14', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '01','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,5,1), 'phone_ps': '02', 'treat': 1, 'training_date': datetime(2018,1,1), 'training': False},
+    { 'paymentPhone': '05','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2100,12,1), 'phone_ps': '01', 'treat': 3, 'training_date': datetime(2018,1,1), 'training': False}, # This one is not paid -- future!
 ]
 
 fat_records = [
@@ -67,8 +67,10 @@ def test_payments(messages):
     workers = calc_payments(messages, pay_workers)
     assert(workers.payment.tolist() == [12000, 12000, 10000, 11000, 10000, 10000])
     assert(workers.reports.tolist() == [1,1,1,1,1,2])
+
     supers = calc_payments(messages, pay_supers)
-    assert(supers.payment.tolist() == [10000, 12000, 10000, 11000, 10000, 12000])
+    assert(supers.payment.tolist() == [10000, 12000, 10000, 11000, 12000, 10000])
+
 
 def test_payments_ignores_messages_more_than_6_weeks_old(messages):
     old_message = { 'paymentPhone': '01','timestamp': datetime(2018,5,1),  'serviceDate': datetime(2018,2,1), 'phone_ps': '13',  'treat': 2, 'training_date': datetime(2018,1,1), 'training': False}
@@ -93,3 +95,6 @@ def test_payments_caps_at_30(fat_messages):
     supers = calc_payments(fat_messages, pay_supers)
     supers = supers[supers.number == '14']
     assert(supers.payment.tolist() == [41000, 40000])
+
+def test_payment_works_with_promoted_chw(messages):
+    pass
