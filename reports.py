@@ -34,7 +34,12 @@ def get_responses(form_id):
     windows = get_windows()
     for since,until in windows:
         res = make_request(form_id, token, since, until)
-        responses += res.json()['items']
+        try:
+            j = res.json()
+        except:
+            logging.error('Exception in get request for form ID: {}'.format(form_id))
+            continue
+        responses += j['items']
     return responses
 
 def clean_typeform(typeform):
