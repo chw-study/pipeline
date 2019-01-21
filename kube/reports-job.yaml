@@ -1,0 +1,23 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: reports
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: reports
+            image: nandanrao/hw-pipeline
+            resources:
+              requests:
+                memory: "2000Mi"
+            args:
+            - python
+            - reports.py
+            envFrom:
+            - secretRef:
+                name: hw-pipeline-envs

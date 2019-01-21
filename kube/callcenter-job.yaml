@@ -1,0 +1,23 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: callcenter
+spec:
+  schedule: "0 1,12,18 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: callcenter
+            image: nandanrao/hw-pipeline
+            resources:
+              requests:
+                memory: "2000Mi"
+            args:
+            - python
+            - callcenter.py
+            envFrom:
+            - secretRef:
+                name: hw-pipeline-envs

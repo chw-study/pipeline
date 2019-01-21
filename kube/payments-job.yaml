@@ -1,0 +1,23 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: payments
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: payments
+            image: nandanrao/hw-pipeline
+            resources:
+              requests:
+                memory: "2000Mi"
+            args:
+            - python
+            - payments.py
+            envFrom:
+            - secretRef:
+                name: hw-pipeline-envs
