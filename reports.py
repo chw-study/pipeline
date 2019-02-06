@@ -58,7 +58,7 @@ def clean_typeform(typeform):
             .assign(code = typeform.code.str.upper()))
 
 def get_question(response, qid, key):
-    if response['answers']:
+    if response.get('answers'):
         return next((a[key] for a in response['answers']
                      if a['field']['id'] == qid), None)
     else:
