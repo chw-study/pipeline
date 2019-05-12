@@ -2,7 +2,6 @@ from lib.utils import get_roster, get_events, get_crosswalk, get_mongo_client, g
 import logging
 import pandas as pd
 
-
 def tag_training_messages(messages, numbers, crosswalk):
     """ Tags messages as training based on dates/numbers """
     pass

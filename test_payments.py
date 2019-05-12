@@ -31,7 +31,7 @@ def test_monther_makes_range():
     now = datetime(2018,5,10)
     m = monther(d, now)
     assert(len(m) == 2)
-    assert(m[0][0] == d + timedelta(days = 1))
+    assert(m[0][0] == datetime(2018, 3, 6))
     assert(m[0][1] == datetime(2018, 4, 6))
     assert(m[1][0] == datetime(2018, 4, 6))
     assert(m[1][1] == datetime(2018, 5, 6))
@@ -39,7 +39,7 @@ def test_monther_makes_range():
 def test_monther_handles_all_dates():
     now = datetime(2018,5,10)
     d = datetime(2017,1,10)
-    assert(len(monther(d, now)) == 3)
+    assert(len(monther(d, now)) == 15)
     d = datetime(2018,1,9)
     assert(len(monther(d, now)) == 4)
     d = datetime(2017,12,10)
@@ -48,8 +48,6 @@ def test_monther_handles_all_dates():
 def test_monther_works_with_now():
     now = datetime(2018,5,10)
     assert(len(monther(now, now)) == 0)
-
-# def test_add_payment_date(messages):
 
 def test_aggs_reports():
     df = pd.DataFrame([

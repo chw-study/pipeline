@@ -14,7 +14,8 @@ import logging
 
 def monther(date, now = datetime.utcnow()):
     date = date + timedelta(days = 1)
-    months = rd(now, date).months
+    delta = rd(now, date)
+    months = delta.years*12 + delta.months
     return [(date + rd(months = m), date + rd(months = m+1))
             for m in range(months)]
 
@@ -23,6 +24,7 @@ def _payment_date(df):
     training_date = df.training_date.values[0]
     training_date = pd.Timestamp(training_date).to_pydatetime()
     for start,end in monther(training_date):
+        print(end)
         idx = (df.serviceDate >= start) & (df.serviceDate < end)
         df.loc[idx, 'payment_due'] = end
     return df

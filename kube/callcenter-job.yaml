@@ -14,7 +14,7 @@ spec:
             image: nandanrao/hw-pipeline
             resources:
               requests:
-                memory: "2000Mi"
+                memory: "1000Mi"
             args:
             - python
             - callcenter.py
