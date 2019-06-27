@@ -50,15 +50,19 @@ def pick_needed_calls(needed, messages):
     return to_call.sample(frac=1).reset_index(drop=True)
 
 def write_needed_calls(to_call, r):
+
     pipe = r.pipeline()
     districts = to_call.chw_district.unique().tolist()
-    loaded = { d: 0 for d in districts }
+    districts = [d for d in districts if d is not None]
+    loaded = { d: 0 for d in districts if d is not None}
 
     # Replace nan values with None to become null in javascript
     to_call = to_call.where((pd.notnull(to_call)), None)
 
     for rec in to_call.to_dict(orient='records'):
         district = rec['chw_district']
+        if district is None:
+            continue
         d = dumps(rec)
         pipe.lpush(district, d)
         loaded[district] += 1

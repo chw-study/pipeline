@@ -67,11 +67,11 @@ def test_write_needed_calls_leaves_only_new_records(r, to_write):
     assert(json.loads(r.rpop('baz')) == json.loads(dumps(baz_records[0])))
     assert(r.rpop('baz') == None)
 
+
 def test_write_needed_calls_works_with_None_district(r):
-    to_write = pd.DataFrame([{'chw_district': None}])
+    to_write = pd.DataFrame([{'chw_district': 'foo'}, {'chw_district': None}])
     write_needed_calls(to_write, r)
-    # Is this really the behavior we want???
-    assert(r.rpop(None) != None)
+    assert(r.rpop('foo') != None)
 
 def test_write_needed_calls_works_with_NaNs(r):
     to_write = pd.DataFrame([{'chw_district': 'foo', 'bar': np.nan}])

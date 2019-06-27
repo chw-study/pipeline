@@ -24,7 +24,6 @@ def _payment_date(df):
     training_date = df.training_date.values[0]
     training_date = pd.Timestamp(training_date).to_pydatetime()
     for start,end in monther(training_date):
-        print(end)
         idx = (df.serviceDate >= start) & (df.serviceDate < end)
         df.loc[idx, 'payment_due'] = end
     return df
@@ -46,7 +45,10 @@ def get_count_df(messages):
                  'patientName', 'patientPhone', 'timestamp',
                  'training', 'called', 'noConsent', 'attempted']
 
+    # invalid messages are sent after interview
+    # messages = messages[messages.invalid == False]
     messages = messages[messages.training == False]
+    messages = messages[messages.invalid == False]
     messages = messages[~(messages.timestamp - messages.serviceDate > timedelta(weeks = 6))]
 
     return (messages

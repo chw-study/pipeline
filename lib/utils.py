@@ -106,6 +106,12 @@ def get_roster():
     df['training_date'] = df.training_date.map(lambda d: datetime.strptime(d, '%d.%m.%y'))
     return df
 
+def get_endline():
+    path = get_latest_s3('healthworkers-payments', 'end-dates/')
+    df = pd.read_excel(path, dtype = {'chw_phone': str, 'endline': object})
+    df['endline'] = df.endline.map(pd.Timestamp)
+    return df.dropna()
+
 def get_latest_s3(bucket, prefix):
     s3 = boto3.client('s3')
     objects = s3.list_objects(Bucket=bucket, Prefix=prefix)

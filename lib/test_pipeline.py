@@ -18,13 +18,21 @@ def roster():
     yield df
 
 @pytest.fixture()
+def endline():
+    df = pd.DataFrame([
+        { 'reporting_number': 'foo', 'endline': datetime(2019,1,1)},
+    ])
+    yield df
+
+@pytest.fixture()
 def messages():
     df = pd.DataFrame([
         { 'senderPhone': 'foo', 'otherkey': 'otherval','timestamp': datetime(2018,2,27), 'ogServiceDate': '11.2.2018',  '_id': 'foo'},
         { 'senderPhone': 'bar', 'otherkey': 'otherval','timestamp': datetime(2018,2,27), 'ogServiceDate': '29.2.2018',  '_id': 'bar'},
-        { 'senderPhone': 'foo', 'otherkey': 'otherval','timestamp': datetime(2018,2,27), 'ogServiceDate': '1.12.2017',  '_id': 'baz'}
+        { 'senderPhone': 'foo', 'otherkey': 'otherval','timestamp': datetime(2018,2,27), 'ogServiceDate': '1.12.2017',  '_id': 'baz'},
+        { 'senderPhone': 'foo', 'otherkey': 'otherval','timestamp': datetime(2019,1,27), 'ogServiceDate': '1.26.2019',  '_id': 'qux'}
     ])
-    df['serviceDate'] = pd.Series([ datetime(2018,1,1,5,35), datetime(2018,2,2,3,45), datetime(2018,2,2,1,10)])
+    df['serviceDate'] = pd.Series([ datetime(2018,1,1,5,35), datetime(2018,2,2,3,45), datetime(2018,2,2,1,10), datetime(2018,2,2,1,10)])
     yield df
 
 def test_translate_numbers_replaces_numbers_in_roster(roster):
@@ -40,7 +48,7 @@ def test_translate_numbers_translates_messages_to_new_key(messages):
     crosswalk = pd.DataFrame([ {'old_number': 'foo', 'new_payment_number': 'newnumber'}])
     new_messages = translate_numbers(messages, crosswalk, old_key = 'senderPhone', new_key = 'paymentPhone')
     assert(new_messages.senderPhone.tolist() == messages.senderPhone.tolist())
-    assert(new_messages.paymentPhone.tolist() == ['newnumber', 'bar', 'newnumber'])
+    assert(new_messages.paymentPhone.tolist() == ['newnumber', 'bar', 'newnumber', 'newnumber'])
 
 def test_translate_numbers_with_multiple_levels(messages):
     messages.loc[2,'senderPhone'] = 'foo1'
@@ -50,7 +58,7 @@ def test_translate_numbers_with_multiple_levels(messages):
     ])
     new_messages = translate_numbers(messages, crosswalk, old_key = 'senderPhone', new_key = 'paymentPhone')
     assert(new_messages.senderPhone.tolist() == messages.senderPhone.tolist())
-    assert(new_messages.paymentPhone.tolist() == ['newnumber', 'bar', 'newnumber'])
+    assert(new_messages.paymentPhone.tolist() == ['newnumber', 'bar', 'newnumber', 'newnumber'])
 
 def test_merge_worker_info(messages, roster):
     messages['paymentPhone']= messages.senderPhone
@@ -63,7 +71,7 @@ def test_assign_tester_numbers(messages, roster):
     messages['paymentPhone']= messages.senderPhone
     messages = messages.assign(training = False)
     assign_tester_numbers(messages, roster)
-    assert(messages.training.tolist() == [False, False, False, True])
+    assert(messages.training.tolist() == [False, False, False, False, True])
 
 def test_assign_training_messages(messages, roster):
     messages['paymentPhone']= messages.senderPhone
@@ -71,39 +79,52 @@ def test_assign_training_messages(messages, roster):
     messages = merge_worker_info(messages, roster, ['reporting_number'])
     messages = messages.assign(training = False)
     assign_training_messages(messages)
-    assert(messages.training.tolist() == [True, False, False])
+    assert(messages.training.tolist() == [True, False, False, False])
 
-def test_add_db_events(messages):
+def test_assign_invalid_messages(messages, endline):
+    messages['paymentPhone']= messages.senderPhone
+    messages = merge_worker_info(messages, endline, ['reporting_number'])
+    assign_invalid_messages(messages)
+    assert(messages.invalid.tolist() == [False, False, False, True])
+
+def test_add_db_events_called(messages):
     events = (
         { 'event': 'called', 'timestamp': datetime(2018,1,3,1,1), 'record': {'_id': 'foo'}, 'updates': { 'code': 'A' }},
         { 'event': 'called', 'timestamp': datetime(2018,1,3,1,1), 'record': {'_id': 'bar'}, 'updates': { 'code': 'B' }})
     new_messages = add_db_events(messages, events)
-    assert(new_messages.called.tolist() == [True, True, False])
-    assert(new_messages.noConsent.tolist() == [False]*3)
-    assert(new_messages.attempted.tolist() == [False]*3)
+    assert(new_messages.called.tolist() == [True, False, True, False])
+    assert(new_messages.noConsent.tolist() == [False]*4)
+    assert(new_messages.attempted.tolist() == [False]*4)
 
-def test_add_db_events(messages):
+def test_add_db_events_other(messages):
     events = (
         { 'event': 'attempted', 'timestamp': datetime(2018,1,3,1,1), 'record': {'_id': 'foo'}},
         { 'event': 'noConsent', 'timestamp': datetime(2018,1,3,1,1), 'record': {'_id': 'bar'}})
     new_messages = add_db_events(messages, events)
-    assert(new_messages.called.tolist() == [False]*3)
+    assert(new_messages.called.tolist() == [False]*4)
     assert(new_messages.noConsent.sum() == 1)
     assert(new_messages.attempted.sum() == 1)
     assert(new_messages[new_messages._id == 'foo'].attempted.tolist() == [True])
     assert(new_messages[new_messages._id == 'bar'].attempted.tolist() == [False])
 
-def test_pipeline_fixes_past_and_future_service_dates(messages, roster):
+def test_pipeline_fixes_past_and_future_service_dates(messages, roster, endline):
     crosswalk = pd.DataFrame([{'old_number': 'foo', 'new_payment_number': 'newnumber'}])
     events = ()
-    transformed = pipeline(messages, events, roster, crosswalk)
+    transformed = pipeline(messages, events, roster, endline, crosswalk)
 
     # Not sure why the order is such, but should be deterministic...
     assert(transformed.serviceDate[0] == transformed.timestamp[0])
     assert(transformed.serviceDate[1] == transformed.timestamp[1])
     assert(transformed.serviceDate[2] != transformed.timestamp[2])
 
-def test_pipeline_drops_duplicates(messages, roster):
+
+def test_pipeline_tags_invalid_messages(messages, roster, endline):
+    crosswalk = pd.DataFrame([{'old_number': 'foo', 'new_payment_number': 'newnumber'}])
+    events = ()
+    transformed = pipeline(messages, events, roster, endline, crosswalk)
+    assert(transformed.invalid.tolist() == [False, False, False, True])
+
+def test_pipeline_drops_duplicates(messages, roster, endline):
     m = messages.to_dict(orient='records')
     m = m + [deepcopy(m[1])]
     messages = pd.DataFrame(m)
@@ -111,6 +132,6 @@ def test_pipeline_drops_duplicates(messages, roster):
     events = (
         { 'event': 'attempted', 'timestamp': datetime(2018,1,3,1,1), 'record': {'_id': 'foo'}},
         { 'event': 'noConsent', 'timestamp': datetime(2018,1,3,1,1), 'record': {'_id': 'bar'}})
-    transformed = pipeline(messages, events, roster, crosswalk)
-    assert(messages.shape[0] == 4)
-    assert(transformed.shape[0] == 3)
+    transformed = pipeline(messages, events, roster, endline, crosswalk)
+    assert(messages.shape[0] == 5)
+    assert(transformed.shape[0] == 4)
