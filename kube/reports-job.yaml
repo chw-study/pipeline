@@ -14,7 +14,8 @@ spec:
             image: nandanrao/hw-pipeline
             resources:
               requests:
-                memory: "2000Mi"
+                cpu: "25m"
+                memory: "1000Mi"
             args:
             - python
             - reports.py
