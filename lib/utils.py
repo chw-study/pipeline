@@ -110,7 +110,7 @@ def get_endline():
     path = get_latest_s3('healthworkers-payments', 'end-dates/')
     df = pd.read_excel(path, dtype = {'chw_phone': str, 'endline': object})
     df['endline'] = df.endline.map(pd.Timestamp)
-    return df.dropna()
+    return df.rename(columns = {'chw_phone': 'reporting_number'}).dropna()
 
 def get_latest_s3(bucket, prefix):
     s3 = boto3.client('s3')
