@@ -58,6 +58,7 @@ def write_needed_calls(to_call, r):
 
     # Replace nan values with None to become null in javascript
     to_call = to_call.where((pd.notnull(to_call)), None)
+    to_call = to_call.drop(['endline'], 1)
 
     for rec in to_call.to_dict(orient='records'):
         district = rec['chw_district']
