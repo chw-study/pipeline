@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: payments
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: payments
+          image: nandanrao/hw-pipeline:latest
+          resources:
+            requests:
+              memory: "2000Mi"
+          args:
+          - python
+          - payments.py
+          envFrom:
+          - secretRef:
+              name: hw-pipeline-envs

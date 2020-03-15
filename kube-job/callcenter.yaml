@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: callcenter
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: callcenter
+          image: nandanrao/hw-pipeline
+          resources:
+            requests:
+              memory: "1000Mi"
+          args:
+          - python
+          - callcenter.py
+          envFrom:
+          - secretRef:
+              name: hw-pipeline-envs

@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: reports
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: reports
+          image: nandanrao/hw-pipeline:latest
+          resources:
+            requests:
+              memory: "2000Mi"
+          args:
+          - python
+          - reports.py
+          envFrom:
+          - secretRef:
+              name: hw-pipeline-envs
