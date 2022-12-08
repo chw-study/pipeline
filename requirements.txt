@@ -2,7 +2,7 @@ apipkg==1.4
 attrs==18.1.0
 boto3==1.7.26
 botocore==1.10.26
-certifi==2018.4.16
+certifi==2022.12.7
 chardet==3.0.4
 dnspython==1.15.0
 docutils==0.14
